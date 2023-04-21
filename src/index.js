@@ -1,5 +1,8 @@
-import { useState } from 'react'
-import ReactDOM from 'react-dom/client'
+import ReactDOM from 'react-dom'
+import {
+  BrowserRouter as Router,
+  Routes, Route, Link
+} from 'react-router-dom'
 
 const Home = () => {
   return (
@@ -17,43 +20,36 @@ const Users = () => (
 )
 
 const App = () => {
-  const [page, setPage] = useState('home')
-
-  const toPage = (page) => (event) => {
-    event.preventDefault()
-    setPage(page)
-  }
-
-  const content = () => {
-    if (page === 'home') {
-      return <Home />
-    } else if (page === 'notes') {
-      return <Notes />
-    } else if (page === 'users') {
-      return <Users />
-    }
-  }
-
+  
   const padding = {
     padding: 5
   }
 
+  // BrowserRouterは、HTML5 history API (pushState、replaceState、および popState イベント) を使用して UI を URL と同期させるルーター。
+  // BrowserRouter(HTML5 history API) を使用すると、ブラウザのアドレス バーにある URL を使用して、
+  // React アプリケーションの内部ルーティングを行うことができる。
+  // そのため、アドレス バーの URL が変更されても、ページのコンテンツは Javascript を使用してのみ操作され、
+  // ブラウザーはサーバーから新しいコンテンツを読み込むことはない。
+  // Linkコンポーネントは、例えばテキスト'notes'を表示して、これをクリックするとURLが /notes に変更される。
+  // Routeコンポーネントは、ブラウザのアドレスが /notes の場合、Notes コンポーネントをレンダリングすることを定義している。
   return (
-    <div>
+    <Router>
       <div>
-        <a href="" onClick={toPage('home')} style={padding}>
-          home
-        </a>
-        <a href="" onClick={toPage('notes')} style={padding}>
-          notes
-        </a>
-        <a href="" onClick={toPage('users')} style={padding}>
-          users
-        </a>
+        <Link style={padding} to="/">home</Link>
+        <Link style={padding} to="/notes">notes</Link>
+        <Link style={padding} to="/users">users</Link>
       </div>
 
-      {content()}
-    </div>
+      <Routes>
+        <Route path="/notes" element={<Notes />} />
+        <Route path="/users" element={<Users />} />
+        <Route path="/" element={<Home />} />
+      </Routes>
+
+      <div>
+        <i>ryota's app</i>
+      </div>
+    </Router>
   )
 }
 
