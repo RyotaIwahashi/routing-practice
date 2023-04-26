@@ -1,8 +1,28 @@
+import { useState } from 'react'
 import ReactDOM from 'react-dom'
 import {
   BrowserRouter as Router,
-  Routes, Route, Link
+  Routes, Route, Link,
+  useParams,
 } from 'react-router-dom'
+
+let initialNotes = [
+  {
+    id: 1,
+    content: 'aaa',
+    important: true
+  },
+  {
+    id: 2,
+    content: 'bbb',
+    important: false
+  },
+  {
+    id: 3,
+    content: 'ccc',
+    important: true
+  },
+]
 
 const Home = () => {
   return (
@@ -10,16 +30,40 @@ const Home = () => {
   )
 }
 
-// 1行なら return なしでいきなり()でかける
-const Notes = () => (
-  <div> <h2>Notes</h2> </div>
+const Notes = ({ notes }) => (
+  <>
+    <h2>Notes</h2>
+    <ul>
+      {notes.map(note => {
+        return (
+          <li key={note.id}>
+            <Link to={`/notes/${note.id}`}>{note.content}</Link>
+          </li>
+        )
+      })}
+    </ul>
+  </>
 )
 
+// useParams を使用することで、<Route>で定義したURLパラメータを取得することができる
+const Note = ({ notes }) => {
+  const id = Number(useParams().id)
+  const note = notes.find(note => id === note.id)
+  return (
+    <>
+      <h2>{note.content}</h2>
+      <div><strong>{note.important ? 'important' : ''}</strong></div>
+    </>
+  )
+}
+
+// 1行なら return なしでいきなり()でかける
 const Users = () => (
   <div> <h2>Users</h2> </div>
 )
 
 const App = () => {
+  const [notes, setNotes] = useState(initialNotes)
   
   const padding = {
     padding: 5
@@ -41,7 +85,8 @@ const App = () => {
       </div>
 
       <Routes>
-        <Route path="/notes" element={<Notes />} />
+        <Route path="/notes/:id" element={<Note notes={notes} />} />
+        <Route path="/notes" element={<Notes notes={notes} />} />
         <Route path="/users" element={<Users />} />
         <Route path="/" element={<Home />} />
       </Routes>
