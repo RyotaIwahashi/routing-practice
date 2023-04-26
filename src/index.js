@@ -2,8 +2,8 @@ import { useState } from 'react'
 import ReactDOM from 'react-dom'
 import {
   BrowserRouter as Router,
-  Routes, Route, Link,
-  useParams,
+  Routes, Route, Link, Navigate,
+  useParams, useNavigate, useMatch,
 } from 'react-router-dom'
 
 let initialNotes = [
@@ -30,6 +30,9 @@ const Home = () => {
   )
 }
 
+// ノートIDをパラメータとして渡すリンクを作成
+// このリンクに対応するコンポーネントの定義は、下の方で Route を使って :id で受け取れるようにしている。
+// 受け取ったら、useParams でコンポーネントからパラメータを参照できる。
 const Notes = ({ notes }) => (
   <>
     <h2>Notes</h2>
@@ -46,9 +49,20 @@ const Notes = ({ notes }) => (
 )
 
 // useParams を使用することで、<Route>で定義したURLパラメータを取得することができる
-const Note = ({ notes }) => {
-  const id = Number(useParams().id)
-  const note = notes.find(note => id === note.id)
+// notes から ID を使って探すパターン
+// const Note = ({ notes }) => {
+//   const id = Number(useParams().id)
+//   const note = notes.find(note => id === note.id)
+//   return (
+//     <>
+//       <h2>{note.content}</h2>
+//       <div><strong>{note.important ? 'important' : ''}</strong></div>
+//     </>
+//   )
+// }
+
+// useMatchフックを使って、単一のノートを受け取るパターン
+const Note = ({ note }) => {
   return (
     <>
       <h2>{note.content}</h2>
@@ -62,8 +76,41 @@ const Users = () => (
   <div> <h2>Users</h2> </div>
 )
 
+const Login = (props) => {
+  const navigate = useNavigate()
+
+  const onSubmit = (event) => {
+    event.preventDefault()
+    props.onLogin('ryota')
+    navigate('/')
+  }
+
+  return (
+    <>
+      <h2>login</h2>
+      <form onSubmit={onSubmit}>
+        <div>
+          username: <input />
+        </div>
+        <div>
+          password: <input type='password' />
+        </div>
+        <button type='submit'>login</button>
+      </form>
+    </>
+  )
+}
+
 const App = () => {
   const [notes, setNotes] = useState(initialNotes)
+  const [user, setUser] = useState('')
+
+  // コンポーネントをレンダリングした際に、URL が/notes/:idに一致する場合、
+  // match に、パスのパラメーター化された部分が挿入される。
+  const match = useMatch('/notes/:id')
+  const note = match
+    ? notes.find(note => note.id === Number(match.params.id))
+    : null
   
   const padding = {
     padding: 5
@@ -76,26 +123,40 @@ const App = () => {
   // ブラウザーはサーバーから新しいコンテンツを読み込むことはない。
   // Linkコンポーネントは、例えばテキスト'notes'を表示して、これをクリックするとURLが /notes に変更される。
   // Routeコンポーネントは、ブラウザのアドレスが /notes の場合、Notes コンポーネントをレンダリングすることを定義している。
+
+  // /users にアクセスしたとき、Route は、ログインしていれば Users コンポーネントを表示し、
+  // ログインしていなければ /login にリダイレクトする。
   return (
-    <Router>
+    <>
       <div>
         <Link style={padding} to="/">home</Link>
         <Link style={padding} to="/notes">notes</Link>
         <Link style={padding} to="/users">users</Link>
+        {user
+          ? <em>{user} logged </em>
+          : <Link style={padding} to="/login">login</Link>
+        }
       </div>
 
       <Routes>
-        <Route path="/notes/:id" element={<Note notes={notes} />} />
+        <Route path="/notes/:id" element={<Note note={note} />} />
         <Route path="/notes" element={<Notes notes={notes} />} />
-        <Route path="/users" element={<Users />} />
+        <Route path="/users" element={user ? <Users /> : <Navigate replace to="/login" />} />
+        <Route path="/login" element={<Login onLogin={(user) => setUser(user)} />} />
         <Route path="/" element={<Home />} />
       </Routes>
 
-      <div>
-        <i>ryota's app</i>
-      </div>
-    </Router>
+      <footer>
+        <br />
+        <em>ryota's app</em>
+      </footer>
+    </>
   )
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App />)
+// useMatchフックはルーティング部分を定義するコンポーネントで使用できないのでRouterはこっちに定義
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <Router>
+    <App />
+  </Router>
+)
