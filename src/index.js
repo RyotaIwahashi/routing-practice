@@ -5,22 +5,26 @@ import {
   Routes, Route, Link, Navigate,
   useParams, useNavigate, useMatch,
 } from 'react-router-dom'
+import { Table, Form, Button } from 'react-bootstrap'
 
 let initialNotes = [
   {
     id: 1,
     content: 'aaa',
-    important: true
+    important: true,
+    user: 'ryota',
   },
   {
     id: 2,
     content: 'bbb',
-    important: false
+    important: false,
+    user: 'ryota',
   },
   {
     id: 3,
     content: 'ccc',
-    important: true
+    important: true,
+    user: 'ryota',
   },
 ]
 
@@ -36,15 +40,24 @@ const Home = () => {
 const Notes = ({ notes }) => (
   <>
     <h2>Notes</h2>
-    <ul>
+    <Table striped hover>
+      <tbody>
       {notes.map(note => {
         return (
-          <li key={note.id}>
-            <Link to={`/notes/${note.id}`}>{note.content}</Link>
-          </li>
+          <tr key={note.id}>
+            <td>
+              <Link to={`/notes/${notes.id}`}>
+                {note.content}
+              </Link>
+            </td>
+            <td>
+              {note.user}
+            </td>
+          </tr>
         )
       })}
-    </ul>
+      </tbody>
+    </Table>
   </>
 )
 
@@ -127,7 +140,7 @@ const App = () => {
   // /users にアクセスしたとき、Route は、ログインしていれば Users コンポーネントを表示し、
   // ログインしていなければ /login にリダイレクトする。
   return (
-    <>
+    <div className='container'>
       <div>
         <Link style={padding} to="/">home</Link>
         <Link style={padding} to="/notes">notes</Link>
@@ -150,7 +163,7 @@ const App = () => {
         <br />
         <em>ryota's app</em>
       </footer>
-    </>
+    </div>
   )
 }
 
