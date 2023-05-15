@@ -5,7 +5,7 @@ import {
   Routes, Route, Link, Navigate,
   useParams, useNavigate, useMatch,
 } from 'react-router-dom'
-import { Table, Form, Button } from 'react-bootstrap'
+import { Table, Form, Button, Alert, Navbar, Nav } from 'react-bootstrap'
 
 let initialNotes = [
   {
@@ -125,6 +125,7 @@ const Login = (props) => {
 const App = () => {
   const [notes, setNotes] = useState(initialNotes)
   const [user, setUser] = useState('')
+  const [message, setMessage] = useState(null)
 
   // コンポーネントをレンダリングした際に、URL が/notes/:idに一致する場合、
   // match に、パスのパラメーター化された部分が挿入される。
@@ -135,6 +136,14 @@ const App = () => {
   
   const padding = {
     padding: 5
+  }
+
+  const login = (user) => {
+    setUser(user)
+    setMessage(`welcome ${user}`)
+    setTimeout(() => {
+      setMessage(null)
+    }, 10000)
   }
 
   // BrowserRouterは、HTML5 history API (pushState、replaceState、および popState イベント) を使用して UI を URL と同期させるルーター。
@@ -149,21 +158,37 @@ const App = () => {
   // ログインしていなければ /login にリダイレクトする。
   return (
     <div className='container'>
-      <div>
-        <Link style={padding} to="/">home</Link>
-        <Link style={padding} to="/notes">notes</Link>
-        <Link style={padding} to="/users">users</Link>
-        {user
-          ? <em>{user} logged </em>
-          : <Link style={padding} to="/login">login</Link>
-        }
-      </div>
+      {(message &&
+        <Alert variant="success">{message}</Alert>
+      )}
+      <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
+        <Navbar.Toggle aria-controls="responsive-navbar-nav" />
+        <Navbar.Collapse id="responsive-navbar-nav">
+          <Nav className="me-auto">
+            <Nav.Link href="#" as="span">
+              <Link style={padding} to="/">home</Link>
+            </Nav.Link>
+            <Nav.Link href="#" as="span">
+              <Link style={padding} to="/notes">notes</Link>
+            </Nav.Link>
+            <Nav.Link href="#" as="span">
+              <Link style={padding} to="/users">users</Link>
+            </Nav.Link>
+            <Nav.Link href="#" as="span">
+              {user
+                ? <em style={padding}>{user} logged in</em>
+                : <Link style={padding} to="/login">login</Link>
+              }
+            </Nav.Link>
+          </Nav>
+        </Navbar.Collapse>
+      </Navbar>
 
       <Routes>
         <Route path="/notes/:id" element={<Note note={note} />} />
         <Route path="/notes" element={<Notes notes={notes} />} />
         <Route path="/users" element={user ? <Users /> : <Navigate replace to="/login" />} />
-        <Route path="/login" element={<Login onLogin={(user) => setUser(user)} />} />
+        <Route path="/login" element={<Login onLogin={(user) => login(user)} />} />
         <Route path="/" element={<Home />} />
       </Routes>
 
